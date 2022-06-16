@@ -1,4 +1,5 @@
 using bike_backend.Databases;
+using bike_backend.Databases.Repositories;
 using bike_backend.Handlers;
 using bike_backend.Interfaces;
 using bike_backend.Services;
@@ -76,7 +77,7 @@ string connectionString = builder.Configuration.GetConnectionString("MySqlContex
 // MySqlVersion
 ServerVersion mySqlServerVersion = ServerVersion.AutoDetect(connectionString);
 
-// Bike context
+// // Bike context
 builder.Services.AddDbContext<MySqlDbContext>(options =>
 {
     options
@@ -85,6 +86,10 @@ builder.Services.AddDbContext<MySqlDbContext>(options =>
         .EnableSensitiveDataLogging()
         .EnableDetailedErrors();
 });
+
+
+// Bike Repository
+builder.Services.AddScoped<IBikeRepository, BikeRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddRouting();
@@ -98,7 +103,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
