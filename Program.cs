@@ -1,15 +1,14 @@
+using bike_backend.Databases;
 using bike_backend.Handlers;
 using bike_backend.Interfaces;
 using bike_backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
-// builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -48,7 +47,7 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Description = "Bearer " + builder.Configuration.GetSection("Secret").Value
     });
-    
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
@@ -63,26 +62,39 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     });
-
 });
 
+// Bearer Authentication for frontend
 builder.Services.AddAuthentication("BearerAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("BearerAuthentication", null);
+
+// Database Connection
+
+// ConnectionString
+string connectionString = builder.Configuration.GetConnectionString("MySqlContext");
+
+// MySqlVersion
+ServerVersion mySqlServerVersion = ServerVersion.AutoDetect(connectionString);
+
+// Bike context
+builder.Services.AddDbContext<MySqlDbContext>(options =>
+{
+    options
+        .UseMySql(connectionString, mySqlServerVersion)
+        .LogTo(Console.WriteLine, LogLevel.Debug)
+        .EnableSensitiveDataLogging()
+        .EnableDetailedErrors();
+});
 
 builder.Services.AddControllers();
 builder.Services.AddRouting();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    // app.UseSwaggerUI(options =>
-    // {
-        // options.SwaggerEndpoint("swagger/v1/swagger.json", "TestService");
-    // });
 }
 
 app.UseRouting();
