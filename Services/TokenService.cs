@@ -16,7 +16,7 @@ public class TokenService : ITokenService
         if (token.Contains("Bearer"))
         {
             ReadOnlySpan<char> tokenSpan = token;
-            token = tokenSpan.Slice(6).ToString();
+            token = tokenSpan.Slice(7).ToString();
         }
         return _configuration.GetSection("Secret").Value.Equals(token);
     }
